@@ -27,59 +27,49 @@ const EventPage = () => {
       const response = await axios.delete(`http://localhost:5000/events/${id}`);
       if (response.status === 200) {
         // Remove the deleted event from the list
-        setEvents(events.filter(event => event.id !== id));
+        setEvents(events.filter((event) => event.id !== id));
       } else {
-        console.error('Event deletion failed');
+        console.error("Event deletion failed");
       }
     } catch (err) {
-      setError('Error deleting event.');
+      setError("Error deleting event.");
       console.error(err);
     }
   };
+
   return (
     <div className="event-page">
       <h1>Event List</h1>
       {error && <p className="error">{error}</p>}
-      <table>
-        <thead>
-          <tr>
-            <th>Event Name</th>
-            <th>Price</th>
-            <th>Duration</th>
-            <th>Contact</th>
-            <th>Details</th>
-            <th>Event Photo</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {events.length > 0 ? (
-            events.map((event) => (
-              <tr key={event.id}>
-                <td>{event.event_name}</td>
-                <td>{event.price}</td>
-                <td>{event.duration}</td>
-                <td>{event.contact}</td>
-                <td>{event.details}</td>
-                <td>
-                  <img
-                    src={`http://localhost:5000${event.event_photo}`}
-                    alt={event.event_name}
-                    width="100"
-                  />
-                </td>
-                <td>
-                  <button onClick={() => handleDelete(event.id)}>Delete</button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7">No events found.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+      
+      <div className="event-container">
+        {events.length > 0 ? (
+          events.map((event) => (
+            <div className="event-card" key={event.id}>
+              <h2 className="event-name">{event.event_name}</h2>
+              <img
+                src={`http://localhost:5000${event.event_photo}`}
+                alt={event.event_name}
+                className="event-photo"
+              />
+              <div className="event-details">
+                <p><strong>Price:</strong> {event.price}</p>
+                <p><strong>Duration:</strong> {event.duration}</p>
+                <p><strong>Contact:</strong> {event.contact}</p>
+                <p><strong>Details:</strong> {event.details}</p>
+                <p><strong>Status:</strong> {event.status || "Not Booked"}</p>
+              </div>
+              <div className="event-actions">
+                <button onClick={() => handleDelete(event.id)} className="delete-button">
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p>No events found.</p>
+        )}
+      </div>
     </div>
   );
 };

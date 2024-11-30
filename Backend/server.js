@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
+
 const app = express();
 const port = 5000;
 
@@ -41,7 +42,7 @@ const upload = multer({
 
 
 app.get("/users", (req, res) => {
-  const query = "SELECT * FROM users";
+  const query = "SELECT * FROM users where admin=0";
   db.query(query, (err, results) => {
     if (err) {
       console.error("Error fetching users:", err);
@@ -195,6 +196,30 @@ app.delete("/events/:id", (req, res) => {
 
 
 
+app.post("/events/book/:id", async (req, res) => {
+  const eventId = req.params.id;
+
+  try {
+    // Check if the event exists
+    const [event] = await db.promise().query("SELECT * FROM tbl_upload WHERE id = ?", [eventId]);
+    if (event.length === 0) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    // If the event is already booked, reject the booking request
+    if (event[0].status === "Booked") {
+      return res.status(400).json({ message: "Event is already booked" });
+    }
+
+    // Update the event status to "Booked"
+    await db.promise().query("UPDATE tbl_upload SET status = 'Booked' WHERE id = ?", [eventId]);
+
+    return res.status(200).json({ message: "Event booked successfully" });
+  } catch (err) {
+    console.error("Error booking event:", err);
+    return res.status(500).json({ message: "Error booking the event" });
+  }
+});
 
 
 // Start the server

@@ -1,68 +1,102 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "./user_page.css"; // Create a CSS file for table styling
+import "./user_page.css";
 
-function UserPage() {
-  const [users, setUsers] = useState([]); // State to store user data
-  const [loading, setLoading] = useState(true); // State to handle loading state
-  const [error, setError] = useState(null); // State to handle errors
+const UserPage = () => {
+  const [events, setEvents] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    // Fetch user data from the backend
-    const fetchUsers = async () => {
+    // Fetch events from the server
+    const fetchEvents = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/users"); // Adjust the endpoint as per your backend
-        setUsers(response.data); // Set the fetched users to state
+        const response = await axios.get("http://localhost:5000/events");
+        setEvents(response.data);
       } catch (err) {
-        console.error("Error fetching users:", err);
-        setError("Failed to load user data");
-      } finally {
-        setLoading(false); // End loading state
+        setError("Error fetching events.");
+        console.error("Error fetching events:", err);
       }
     };
 
-    fetchUsers();
+    fetchEvents();
   }, []);
 
-  if (loading) {
-    return <div>Loading...</div>; // Display loading message while fetching data
-  }
-
-  if (error) {
-    return <div>{error}</div>; // Display error message if there's an issue
-  }
+  const handleBook = async (id) => {
+    // Optimistic UI Update: Immediately set the status as "Booked" in the UI
+    setEvents((prevEvents) =>
+      prevEvents.map((event) =>
+        event.id === id ? { ...event, status: "Booked" } : event
+      )
+    );
+  
+    try {
+      // Send the booking request to the backend
+      const response = await axios.post(`http://localhost:5000/events/book/${id}`);
+  
+      if (response.status === 200) {
+        console.log("Booking successful:", response.data);
+        // Optionally, you can log the success response from the server to confirm
+      } else {
+        // If the response from the server is unexpected
+        setError("Error booking the event. " + (response.data.message || ""));
+        console.error("Unexpected response:", response);
+      }
+    } catch (err) {
+      // If there was an error with the request (e.g., server error)
+      setError("Error booking the event.");
+      console.error("Error booking the event:", err.response ? err.response.data : err);
+      
+      // Revert the status back to "Not Booked" if the booking failed
+      setEvents((prevEvents) =>
+        prevEvents.map((event) =>
+          event.id === id ? { ...event, status: "Not Booked" } : event
+        )
+      );
+    }
+  };
+  
 
   return (
     <div className="user-page">
-      <h1>Registered Users</h1>
-      {users.length > 0 ? (
-        <table className="user-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Address</th>
-              <th>Date of Birth</th>
-              <th>Phone</th>
-              <th>Email</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user, index) => (
-              <tr key={index}>
-                <td>{user.name}</td>
-                <td>{user.address}</td>
-                <td>{user.dob}</td>
-                <td>{user.phone}</td>
-                <td>{user.email}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No users registered yet.</p>
-      )}
+      <nav className="navbar">
+        <a href="/" className="nav-link">Home</a>
+      </nav>
+
+      <h1>Available Events</h1>
+      {error && <p className="error">{error}</p>}
+
+      <div className="event-container">
+        {events.length > 0 ? (
+          events.map((event) => (
+            <div className="event-card" key={event.id}>
+              <h2 className="event-name">{event.event_name}</h2>
+              <img
+                src={`http://localhost:5000${event.event_photo}`}
+                alt={event.event_name}
+                className="event-photo"
+              />
+              <div className="event-details">
+                <p><strong>Price:</strong> {event.price}</p>
+                <p><strong>Duration:</strong> {event.duration}</p>
+                <p><strong>Contact:</strong> {event.contact}</p>
+                <p><strong>Details:</strong> {event.details}</p>
+                <p><strong>Status:</strong> {event.status || "Not Booked"}</p>
+              </div>
+              <button
+                onClick={() => handleBook(event.id)}
+                disabled={event.status === "Booked"}
+                className="book-button"
+              >
+                {event.status === "Booked" ? "Booked" : "Book"}
+              </button>
+            </div>
+          ))
+        ) : (
+          <p>No events available.</p>
+        )}
+      </div>
     </div>
   );
-}
+};
 
 export default UserPage;
