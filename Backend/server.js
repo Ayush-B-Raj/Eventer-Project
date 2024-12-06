@@ -3,7 +3,7 @@ const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-
+const multer = require("multer");
 
 const app = express();
 const port = 5000;
@@ -20,40 +20,6 @@ const db = mysql.createConnection({
   database: "micro", // Your database name
 });
 
-const multer = require('multer');
-
-// Set up multer storage configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, './uploads');  // Path to save uploaded files
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);  // Unique filename
-  }
-});
-
-
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 } // 10 MB limit (adjust as necessary)
-});
-
-
-
-app.get("/users", (req, res) => {
-  const query = "SELECT * FROM users where admin=0";
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching users:", err);
-      res.status(500).send("Error fetching users");
-    } else {
-      res.json(results);
-    }
-  });
-});
-
-
 // Check connection to MySQL
 db.connect((err) => {
   if (err) {
@@ -63,36 +29,59 @@ db.connect((err) => {
   console.log("Connected to MySQL database");
 });
 
-// API endpoint to handle form data submission (Register)
-app.post("/submit", (req, res) => {
-  const { name, address, dob, phone, email, password } = req.body;
+// Multer storage setup
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
 
-  // Hash the password before saving it to the database
-  bcrypt.hash(password, 10, (err, hashedPassword) => {
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB limit
+});
+
+// Serve static files from the "uploads" directory
+app.use("/uploads", express.static("uploads"));
+
+// API to fetch users
+app.get("/users", (req, res) => {
+  const query = "SELECT * FROM users WHERE admin = 0"; // Only non-admin users
+  db.query(query, (err, results) => {
     if (err) {
-      console.error("Error hashing password:", err);
-      res.status(500).send("Error hashing password");
-      return;
+      console.error("Error fetching users:", err);
+      return res.status(500).send("Error fetching users");
     }
-
-    const query = 'INSERT INTO users (name, address, dob, phone, email, password) VALUES (?, ?, ?, ?, ?, ?)';
-
-    db.query(
-      query,
-      [name, address, dob, phone, email, hashedPassword],
-      (err, result) => {
-        if (err) {
-          console.error("Error inserting data:", err);
-          res.status(500).send("Error inserting data");
-          return;
-        }
-        res.status(200).send("Form data inserted successfully");
-      }
-    );
+    res.json(results);
   });
 });
 
-// API endpoint to handle login (validate email and password)
+// User registration
+app.post("/submit", (req, res) => {
+  const { name, address, dob, phone, email, password } = req.body;
+
+  bcrypt.hash(password, 10, (err, hashedPassword) => {
+    if (err) {
+      console.error("Error hashing password:", err);
+      return res.status(500).send("Error hashing password");
+    }
+
+    const query =
+      "INSERT INTO users (name, address, dob, phone, email, password) VALUES (?, ?, ?, ?, ?, ?)";
+    db.query(query, [name, address, dob, phone, email, hashedPassword], (err) => {
+      if (err) {
+        console.error("Error inserting user data:", err);
+        return res.status(500).send("Error inserting user data");
+      }
+      res.status(200).send("User registered successfully");
+    });
+  });
+});
+
+// User login
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
@@ -100,28 +89,20 @@ app.post("/login", (req, res) => {
   db.query(query, [email], (err, results) => {
     if (err) {
       console.error("Error during login:", err);
-      return res.status(500).send({ success: false, message: "Internal server error" });
+      return res.status(500).send("Internal server error");
     }
 
     if (results.length > 0) {
       const user = results[0];
 
-      // Compare the entered password with the hashed password in the database
       bcrypt.compare(password, user.password, (err, isMatch) => {
         if (err) {
           console.error("Error comparing passwords:", err);
-          return res.status(500).send({ success: false, message: "Internal server error" });
+          return res.status(500).send("Internal server error");
         }
 
         if (isMatch) {
-          // If the password matches, send the user data including the admin status
-          res.send({
-            success: true,
-            user: {
-              ...user,  // Include all user details
-              admin: user.admin === 1, // Add admin flag
-            }
-          });
+          res.send({ success: true, user });
         } else {
           res.send({ success: false, message: "Invalid email or password" });
         }
@@ -132,8 +113,8 @@ app.post("/login", (req, res) => {
   });
 });
 
-// API endpoint for uploading event data (including the file)
-app.post("/upload", upload.single('eventPhoto'), (req, res) => {
+// Upload event
+app.post("/upload", upload.single("eventPhoto"), (req, res) => {
   const { eventName, price, duration, contact, Details } = req.body;
   const eventPhoto = req.file;
 
@@ -141,29 +122,20 @@ app.post("/upload", upload.single('eventPhoto'), (req, res) => {
     return res.status(400).send("Event photo is required.");
   }
 
-  // Save event data to the tbl_upload table along with the file path
   const query =
     "INSERT INTO tbl_upload (event_name, event_photo, price, duration, contact, details) VALUES (?, ?, ?, ?, ?, ?)";
+  const eventPhotoPath = `/uploads/${eventPhoto.filename}`;
 
-  const eventPhotoPath = `/uploads/${eventPhoto.filename}`; // Relative path to the uploaded file
-
-  db.query(
-    query,
-    [eventName, eventPhotoPath, price, duration, contact, Details],
-    (err, result) => {
-      if (err) {
-        console.error("Error inserting event data:", err);
-        return res.status(500).send("Error uploading event.");
-      }
-      res.status(200).send({ success: true, message: "Event uploaded successfully!" });
+  db.query(query, [eventName, eventPhotoPath, price, duration, contact, Details], (err) => {
+    if (err) {
+      console.error("Error inserting event data:", err);
+      return res.status(500).send("Error uploading event.");
     }
-  );
+    res.status(200).send({ success: true, message: "Event uploaded successfully!" });
+  });
 });
 
-
-
-app.use('/uploads', express.static('uploads'));
-
+// Fetch events
 app.get("/events", (req, res) => {
   const query = "SELECT * FROM tbl_upload";
   db.query(query, (err, results) => {
@@ -175,11 +147,10 @@ app.get("/events", (req, res) => {
   });
 });
 
-// API endpoint to delete an event by ID
+// Delete event
 app.delete("/events/:id", (req, res) => {
   const eventId = req.params.id;
 
-  // Delete the event record from the database
   const query = "DELETE FROM tbl_upload WHERE id = ?";
   db.query(query, [eventId], (err, result) => {
     if (err) {
@@ -194,14 +165,14 @@ app.delete("/events/:id", (req, res) => {
   });
 });
 
-
-
+// Book event
 app.post("/events/book/:id", async (req, res) => {
-  const eventId = req.params.id;
+  const { id } = req.params;
+  const { username } = req.body; // Ensure this is being sent by the frontend
 
   try {
     // Check if the event exists
-    const [event] = await db.promise().query("SELECT * FROM tbl_upload WHERE id = ?", [eventId]);
+    const [event] = await db.promise().query("SELECT * FROM tbl_upload WHERE id = ?", [id]);
     if (event.length === 0) {
       return res.status(404).json({ message: "Event not found" });
     }
@@ -211,8 +182,9 @@ app.post("/events/book/:id", async (req, res) => {
       return res.status(400).json({ message: "Event is already booked" });
     }
 
-    // Update the event status to "Booked"
-    await db.promise().query("UPDATE tbl_upload SET status = 'Booked' WHERE id = ?", [eventId]);
+    // Update the event status to "Booked" and set the booked_by field
+    const query = "UPDATE tbl_upload SET status = 'Booked', booked_by = ? WHERE id = ?";
+    await db.promise().query(query, [username, id]);
 
     return res.status(200).json({ message: "Event booked successfully" });
   } catch (err) {
@@ -220,7 +192,6 @@ app.post("/events/book/:id", async (req, res) => {
     return res.status(500).json({ message: "Error booking the event" });
   }
 });
-
 
 // Start the server
 app.listen(port, () => {

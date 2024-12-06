@@ -5,6 +5,7 @@ import "./user_page.css";
 const UserPage = () => {
   const [events, setEvents] = useState([]);
   const [error, setError] = useState("");
+  const [username, setUsername] = useState(""); // Store the logged-in user's name
 
   useEffect(() => {
     // Fetch events from the server
@@ -12,9 +13,13 @@ const UserPage = () => {
       try {
         const response = await axios.get("http://localhost:5000/events");
         setEvents(response.data);
+
+        // Fetch the logged-in user's name
+        const userResponse = await axios.get("http://localhost:5000/user");
+        setUsername(userResponse.data.username); // Assumes server sends logged-in user's name
       } catch (err) {
-        setError("Error fetching events.");
-        console.error("Error fetching events:", err);
+        setError("");
+        console.error(err);
       }
     };
 
@@ -22,39 +27,43 @@ const UserPage = () => {
   }, []);
 
   const handleBook = async (id) => {
-    // Optimistic UI Update: Immediately set the status as "Booked" in the UI
-    setEvents((prevEvents) =>
-      prevEvents.map((event) =>
-        event.id === id ? { ...event, status: "Booked" } : event
-      )
-    );
-  
     try {
-      // Send the booking request to the backend
-      const response = await axios.post(`http://localhost:5000/events/book/${id}`);
+      const username = localStorage.getItem("username"); // Retrieve the stored name
+  
+      if (!username) {
+        alert("User not logged in");
+        return;
+      }
+
+      // Optimistic UI update
+      setEvents((prevEvents) =>
+        prevEvents.map((event) =>
+          event.id === id ? { ...event, status: "Booked", booked_by: username } : event
+        )
+      );
+
+      // Send booking request to the backend
+      const response = await axios.post(`http://localhost:5000/events/book/${id}`, {
+        username, // Include username in the body
+      });
   
       if (response.status === 200) {
         console.log("Booking successful:", response.data);
-        // Optionally, you can log the success response from the server to confirm
       } else {
-        // If the response from the server is unexpected
-        setError("Error booking the event. " + (response.data.message || ""));
-        console.error("Unexpected response:", response);
+        throw new Error(response.data.message || "Booking failed");
       }
     } catch (err) {
-      // If there was an error with the request (e.g., server error)
-      setError("Error booking the event.");
-      console.error("Error booking the event:", err.response ? err.response.data : err);
-      
-      // Revert the status back to "Not Booked" if the booking failed
+      console.error("Error booking the event:", err);
+  
+      // Revert the optimistic UI update if booking fails
       setEvents((prevEvents) =>
         prevEvents.map((event) =>
-          event.id === id ? { ...event, status: "Not Booked" } : event
+          event.id === id ? { ...event, status: "Not Booked", booked_by: null } : event
         )
       );
+      alert("Failed to book the event");
     }
   };
-  
 
   return (
     <div className="user-page">

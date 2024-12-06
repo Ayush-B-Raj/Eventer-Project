@@ -23,8 +23,9 @@ const LoginRegister = () => {
       if (response.data.success) {
         const user = response.data.user;
 
-        // Store user data in localStorage
+        // Store user data and username (name field) in localStorage
         localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("username", user.name);  // Storing the name (username)
 
         // Navigate based on admin status
         if (user.admin) {

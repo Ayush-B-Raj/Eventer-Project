@@ -7,7 +7,6 @@ const EventPage = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Fetch events from the server
     const fetchEvents = async () => {
       try {
         const response = await axios.get("http://localhost:5000/events");
@@ -18,7 +17,11 @@ const EventPage = () => {
       }
     };
 
+    // Fetch events every 10 seconds
+    const interval = setInterval(fetchEvents, 10000);
     fetchEvents();
+
+    return () => clearInterval(interval);
   }, []);
 
   // Handle deleting an event
@@ -57,7 +60,10 @@ const EventPage = () => {
                 <p><strong>Duration:</strong> {event.duration}</p>
                 <p><strong>Contact:</strong> {event.contact}</p>
                 <p><strong>Details:</strong> {event.details}</p>
-                <p><strong>Status:</strong> {event.status || "Not Booked"}</p>
+                <p><strong>Status:</strong> 
+                  {event.status} 
+                  {event.status === "Booked" && event.booked_by ? ` by ${event.booked_by}` : ""}
+                </p>
               </div>
               <div className="event-actions">
                 <button onClick={() => handleDelete(event.id)} className="delete-button">
