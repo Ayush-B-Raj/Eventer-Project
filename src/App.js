@@ -6,6 +6,7 @@ import UserPage from "./Components/UserPage/UserPage"; // Import UserPage
 import AdminPage from "./Components/AdminPage/AdminPage"; // Import AdminPage
 import UploadPage from "./Components/AdminPage/UploadPage"; // Import UploadPage
 import EventsPage from "./Components/AdminPage/EventsPage"; // Import EventsPage
+import BookingPage from "./Components/AdminPage/BookingPage"; // Import EventsPage
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/admin" element={<AdminPage />}>
             <Route path="upload" element={<UploadPage />} /> {/* Nested route for Upload */}
             <Route path="events" element={<EventsPage />} /> {/* Nested route for Events */}
+            <Route path="booked" element={<BookingPage />} /> {/* Nested route for Events */}
           </Route>
         </Routes>
       </div>

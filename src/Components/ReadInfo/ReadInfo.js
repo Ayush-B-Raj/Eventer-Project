@@ -9,10 +9,8 @@ function ReadInfo() {
     dob: "",
     phone: "",
     email: "",
-    password: "", // Added password field
+    password: "",
   });
-
-  const [submittedData, setSubmittedData] = useState(null); // State to store submitted data
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,31 +21,30 @@ function ReadInfo() {
     e.preventDefault();
 
     try {
-      // Sending form data to the backend via API
       const response = await axios.post("http://localhost:5000/submit", formData);
-      alert(response.data); // Display success message
-
-      // Store the submitted data
-      setSubmittedData(formData);
+      alert(response.data);
     } catch (error) {
       console.error("There was an error submitting the form!", error);
       alert("Error submitting the form.");
     }
 
-    // Clear form after submission
     setFormData({
       name: "",
       address: "",
       dob: "",
       phone: "",
       email: "",
-      password: "", // Clear password field
+      password: "",
     });
   };
 
   return (
     <div className="form-container">
-      <h1>Read User Information</h1>
+      <nav className="navbar">
+        <a href="/" className="nav-link">Login</a>
+      </nav>
+
+      <h1>Registration Form</h1>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="name">Name:</label>
@@ -129,41 +126,6 @@ function ReadInfo() {
 
         <button type="submit">Submit</button>
       </form>
-
-      {/* Display submitted data below the form */}
-      {submittedData && (
-        <div className="submitted-data">
-          <h2>Submitted Details</h2>
-          <table>
-            <tbody>
-              <tr>
-                <th>Name</th>
-                <td>{submittedData.name}</td>
-              </tr>
-              <tr>
-                <th>Address</th>
-                <td>{submittedData.address}</td>
-              </tr>
-              <tr>
-                <th>Date of Birth</th>
-                <td>{submittedData.dob}</td>
-              </tr>
-              <tr>
-                <th>Phone</th>
-                <td>{submittedData.phone}</td>
-              </tr>
-              <tr>
-                <th>Email</th>
-                <td>{submittedData.email}</td>
-              </tr>
-              <tr>
-                <th>Password</th>
-                <td>{submittedData.password}</td> {/* Display password */}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }

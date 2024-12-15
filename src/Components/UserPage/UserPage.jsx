@@ -68,9 +68,10 @@ const UserPage = () => {
   return (
     <div className="user-page">
       <nav className="navbar">
-        <a href="/" className="nav-link">Home</a>
+        <a href="/user" className="nav-link">Home</a> 
+        <a href="/" className="nav-link logout">Log Out</a>
       </nav>
-
+      <span className="welcome-message"> {username}</span>
       <h1>Available Events</h1>
       {error && <p className="error">{error}</p>}
 

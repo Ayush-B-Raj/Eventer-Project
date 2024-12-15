@@ -32,6 +32,26 @@
     border-radius: 4px;
     font-size: 16px;
   }
+  /* Navbar Styling */
+.navbar {
+  background-color: #333;
+  padding: 10px;
+  display: flex;
+  justify-content: center;  /* Centers the navbar content horizontally */
+  align-items: center;  /* Ensures vertical centering */
+}
+
+.nav-link {
+  text-decoration: none;
+  font-size: 16px;
+  padding: 5px 15px;
+  color: #fff; /* Optional: to change the link text color */
+  margin: 0 10px;  /* Adds space between links */
+}
+
+
+
+
   
   textarea {
     resize: vertical;
@@ -53,3 +73,4 @@
   button:hover {
     background-color: #45a049;
   }
+  

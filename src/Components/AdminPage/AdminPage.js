@@ -40,6 +40,8 @@ function AdminPage() {
         <Link to="/admin" className="nav-link">Home</Link>
         <Link to="/admin/upload" className="nav-link">Upload</Link>
         <Link to="/admin/events" className="nav-link">Events</Link>
+        <Link to="/admin/booked" className="nav-link">Bookings</Link>
+        <Link to="/" className="nav-link">Log Out</Link>
       </nav>
 
       {/* Page Content */}
