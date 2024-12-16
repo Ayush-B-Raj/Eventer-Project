@@ -2,20 +2,26 @@
 .navbar {
   background-color: #333;
   padding: 1rem;
-  text-align: center;
   display: flex;
   align-items: center;
+  justify-content: space-between; /* Spread out items across the navbar */
+  width: 100%; /* Ensure it spans the full width */
+  position: fixed; /* Keep the navbar fixed at the top */
+  top: 0;
+  left: 0;
+  z-index: 1000; /* Ensure the navbar stays on top of other content */
 }
 
+/* Navigation Links */
 .nav-link {
   color: white;
   text-decoration: none;
   font-size: 1.2rem;
-  margin-right: 10px;
+  margin-right: 20px; /* Space out the links */
 }
 
 .logout {
-  margin-left: auto;
+  margin-left: auto; /* Push the logout button to the right */
 }
 
 .nav-link:hover {
@@ -27,6 +33,9 @@
   padding: 2rem;
   font-family: Arial, sans-serif;
   text-align: center;
+  margin-top: 70px; /* Adjust this value to match the height of the navbar */
+  min-height: 100vh; /* Ensure the content stretches to fill the page */
+  padding-bottom: 80px; /* Add extra padding at the bottom to prevent overlap with footer */
 }
 
 .event-container {
@@ -68,6 +77,7 @@
 .event-details p {
   margin: 0.5rem 0;
 }
+
 .book-button {
   background-color: #007bff;
   color: white;
@@ -87,3 +97,32 @@
   background-color: #0056b3;
 }
 
+/* Footer Section */
+.footer {
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+  position: relative; /* Make sure the footer is at the bottom of the content */
+  width: 100%;
+  bottom: 0;
+  left: 0;
+}
+
+.footer .bar {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  padding: 10px 0;
+}
+
+.footer .bar div {
+  margin: 5px 15px;
+  font-size: 16px;
+}
+
+.footer .copyright {
+  margin-top: 10px;
+  font-size: 14px;
+  opacity: 0.7;
+}

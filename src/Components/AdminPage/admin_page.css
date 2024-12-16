@@ -9,9 +9,10 @@ body {
 .admin-page {
   display: flex;
   flex-direction: column;
-  min-height: 60vh;
+  min-height: 100vh; /* Ensure content stretches to fill the page */
 }
 
+/* Navigation Bar */
 .admin-nav {
   background-color: #333;
   padding: 15px 0;
@@ -19,8 +20,14 @@ body {
   justify-content: center;
   gap: 30px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: fixed; /* Make it stick to the top */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000; /* Keep it on top of other content */
 }
 
+/* Navigation Link Styling */
 .nav-link {
   color: white;
   text-decoration: none;
@@ -36,32 +43,12 @@ body {
 /* Content Styles */
 .content {
   padding: 20px;
-  margin-top: 20px;
+  margin-top: 70px; /* Adjust for the height of the fixed navigation bar */
+  margin-bottom: 100px; /* Increase space for the footer */
   flex-grow: 1;
+  overflow-y: auto; /* Allow scrolling */
 }
 
-.admin-title {
-  font-size: 2.5rem;
-  text-align: center;
-  color: #333;
-  margin-bottom: 30px;
-}
-
-.section-title {
-  font-size: 1.8rem;
-  color: #333;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #4a90e2;
-  padding-bottom: 5px;
-}
-
-.loading, .error {
-  text-align: center;
-  color: #ff5733;
-  font-size: 1.2rem;
-  font-weight: 500;
-  padding: 20px;
-}
 
 /* Table Styles */
 .admin-table {
@@ -92,3 +79,33 @@ body {
   font-size: 1rem;
   color: #555;
 }
+
+/* Footer Styles */
+.footer {
+  width: 100%;
+  background: #333;
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+
+.footer .bar {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  padding: 10px 0;
+}
+
+.footer .bar div {
+  margin: 5px 15px;
+  font-size: 16px;
+}
+
+.footer .copyright {
+  margin-top: 10px;
+  font-size: 14px;
+  opacity: 0.7;
+}  

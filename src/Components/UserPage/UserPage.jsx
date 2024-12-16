@@ -105,6 +105,20 @@ const UserPage = () => {
           <p>No events available.</p>
         )}
       </div>
+
+
+      {/* Footer Section */}
+     <div className="footer">
+        <div className="bar">
+          <div>Contact Us</div>
+          <div>Email: eventmanage@gmal.com</div>
+          <div>Phone: +91 9996548367</div>
+          <div>Address: Kothamangalam Bypass Rd</div>
+        </div>
+        <div className="copyright">
+          © 2024 All rights reserved
+        </div>
+      </div>
     </div>
   );
 };
