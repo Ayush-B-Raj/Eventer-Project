@@ -65,9 +65,16 @@ const UserPage = () => {
     }
   };
 
+  const extractPhoneNumber = (contact) => {
+    // Extract only the phone number from the contact string
+    const phoneMatch = contact.match(/\+?[1-9]\d{1,14}/);
+    return phoneMatch ? phoneMatch[0] : null;
+  };
+
   return (
     <div className="user-page">
       <nav className="navbar">
+      <div className="site-name">Event Sphere</div>
         <a href="/user" className="nav-link">Home</a> 
         <a href="/" className="nav-link logout">Log Out</a>
       </nav>
@@ -99,6 +106,23 @@ const UserPage = () => {
               >
                 {event.status === "Booked" ? "Booked" : "Book"}
               </button>
+              <button
+  onClick={() => {
+    const phoneNumber = extractPhoneNumber(event.contact);
+    if (phoneNumber) {
+      const message = `Hi, I'm interested in the ${event.event_name} event.`; // Message text
+      const encodedMessage = encodeURIComponent(message); // Proper encoding for the message
+      const url = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+      window.open(url, "_blank"); // Open WhatsApp in a new tab
+    } else {
+      alert("Invalid contact information.");
+    }
+  }}
+  className="enquiry-button"
+>
+  Enquire
+</button>
+
             </div>
           ))
         ) : (

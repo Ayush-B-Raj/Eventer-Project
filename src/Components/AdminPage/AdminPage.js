@@ -37,6 +37,7 @@ function AdminPage() {
     <div className="admin-page">
       {/* Navigation Bar */}
       <nav className="admin-nav">
+      <div className="site-name">Event Sphere</div>
         <Link to="/admin" className="nav-link">Home</Link>
         <Link to="/admin/upload" className="nav-link">Upload</Link>
         <Link to="/admin/events" className="nav-link">Events</Link>
